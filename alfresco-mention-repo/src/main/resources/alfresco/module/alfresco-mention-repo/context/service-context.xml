@@ -31,5 +31,7 @@
         <property name="policyComponent" ref="policyComponent" />
         <property name="contentService" ref="ContentService" />
         <property name="mentionNotifier" ref="com.metaversant.MentionNotifier" />
+        <property name="transactionService" ref="TransactionService" />
+        <property name="threadPoolExecutor" ref="defaultAsyncThreadPool" />
     </bean>
 </beans>

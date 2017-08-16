@@ -9,13 +9,20 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.transaction.TransactionListener;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.log4j.Logger;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 
@@ -27,11 +34,18 @@ import static org.alfresco.model.ContentModel.PROP_CONTENT;
  */
 public class ScanCommentForMention implements NodeServicePolicies.OnUpdateNodePolicy {
 
+    private static final String KEY_COMMENT_NODE =
+            ScanCommentForMention.class.getName() + ".commentNode";
+
+    private TransactionListener transactionListener;
+
     // Dependencies
     private NodeService nodeService;
     private PolicyComponent policyComponent;
     private ContentService contentService;
     private MentionNotifier mentionNotifier;
+    private TransactionService transactionService;
+    private ThreadPoolExecutor threadPoolExecutor;
 
     // Behaviours
     private Behaviour onUpdateNode;
@@ -51,6 +65,8 @@ public class ScanCommentForMention implements NodeServicePolicies.OnUpdateNodePo
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
                 ForumModel.TYPE_POST,
                 this.onUpdateNode);
+
+        this.transactionListener = new CommentUpdateTransactionListener();
     }
 
     public void onUpdateNode(NodeRef commentNode) {
@@ -86,6 +102,69 @@ public class ScanCommentForMention implements NodeServicePolicies.OnUpdateNodePo
             }
         }
         return false;
+    }
+
+    private class CommentUpdateTransactionListener
+            extends TransactionListenerAdapter implements TransactionListener {
+
+        @Override
+        public void afterCommit() {
+            @SuppressWarnings("unchecked")
+            NodeRef commentNode = AlfrescoTransactionSupport.getResource(KEY_COMMENT_NODE);
+            if (commentNode != null) {
+                // Launch every node work in a different thread
+                Runnable runnable = new RelatedNodeDeletion(commentNode);
+                threadPoolExecutor.execute(runnable);
+            }
+        }
+
+    }
+
+    private class RelatedNodeDeletion implements Runnable {
+
+        private NodeRef commentNode;
+
+        private RelatedNodeDeletion(NodeRef commentNode) {
+            this.commentNode = commentNode;
+        }
+
+        @Override
+        public void run() {
+            AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>() {
+
+                public Void doWork() throws Exception {
+
+                    RetryingTransactionHelper.RetryingTransactionCallback<Void> callback = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+
+                        @Override
+                        public Void execute() throws Throwable {
+                            findAndNotifyMentionedUsers(commentNode);
+                            return null;
+                        }
+                    };
+
+                    try {
+                        RetryingTransactionHelper txnHelper =
+                                transactionService.getRetryingTransactionHelper();
+                        txnHelper.doInTransaction(callback, false, true);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    return null;
+
+                }
+            });
+        }
+
+    }
+
+    public void setTransactionService(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+
+    public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor) {
+        this.threadPoolExecutor = threadPoolExecutor;
     }
 
     public NodeService getNodeService() {
