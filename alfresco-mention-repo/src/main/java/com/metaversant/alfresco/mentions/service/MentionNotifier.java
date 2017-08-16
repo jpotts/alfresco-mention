@@ -2,17 +2,17 @@ package com.metaversant.alfresco.mentions.service;
 
 import com.metaversant.alfresco.mentions.exceptions.MentionNotifierException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.ForumModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -31,6 +31,7 @@ public class MentionNotifier {
     private ActionService actionService;
     private NodeService nodeService;
     private SearchService searchService;
+    private PersonService personService;
 
     private Logger logger = Logger.getLogger(MentionNotifier.class);
 
@@ -44,7 +45,11 @@ public class MentionNotifier {
         }
     }
 
-    private void sendNotification(String recipient, NodeRef nodeRef) throws MentionNotifierException {
+    private void sendNotification(String userName, NodeRef nodeRef) throws MentionNotifierException {
+        String recipient = getEmailAddress(userName);
+        if (recipient == null) {
+            logger.debug("Could not determine recipient email address from userName: " + userName);
+        }
         logger.debug("Sending notification to: " + recipient + " for: " + nodeRef);
 
         // Get the template to use for the notification
@@ -104,6 +109,19 @@ public class MentionNotifier {
         return resultSet.getNodeRef(0);
     }
 
+    private String getEmailAddress(String userName) {
+        NodeRef personNodeRef = personService.getPerson(userName);
+
+        if (personNodeRef != null) {
+            String emailAddress = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL);
+            if (StringUtils.isNotBlank(emailAddress)) {
+                return emailAddress;
+            }
+        }
+
+        return null;
+    }
+
     public void setActionService(ActionService actionService) {
         this.actionService = actionService;
     }
@@ -114,5 +132,9 @@ public class MentionNotifier {
 
     public void setSearchService(SearchService searchService) {
         this.searchService = searchService;
+    }
+
+    public void setPersonService(PersonService personService) {
+        this.personService = personService;
     }
 }

@@ -24,6 +24,7 @@
         <property name="nodeService" ref="NodeService" />
         <property name="actionService" ref="ActionService" />
         <property name="searchService" ref="SearchService" />
+        <property name="personService" ref="PersonService" />
     </bean>
 
     <bean id="com.metaversant.CommentMentionBehavior" class="com.metaversant.alfresco.mentions.behavior.ScanCommentForMention" init-method="init">
