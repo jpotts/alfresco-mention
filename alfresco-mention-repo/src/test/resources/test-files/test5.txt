@@ -1,0 +1,1 @@
+A mention with a non-space trailing character, such as @tuser1, looks like this or this: @tuser2; or this @tuser3.
