@@ -6,7 +6,7 @@
     <artifactId>alfresco-mention-repo</artifactId>
     <version>0.0.1</version>
     <name>alfresco-mention-notifications Platform Jar Module - SDK 3</name>
-    <description>Platform JAR Module (to be included in the alfresco.war) - SDK 3</description>
+    <description>This add-on scans comments for username mentions, then notifies those users.</description>
     <packaging>jar</packaging>
 
     <properties>
