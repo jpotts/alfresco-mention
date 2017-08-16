@@ -12,6 +12,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -25,6 +26,8 @@ import java.util.Map;
  * Created by jpotts, Metaversant on 7/31/17.
  */
 public class MentionNotifier {
+
+    // Dependencies
     private ActionService actionService;
     private NodeService nodeService;
     private SearchService searchService;
@@ -33,6 +36,7 @@ public class MentionNotifier {
 
     private static final String NOTIFICATION_SUBJECT = "You were mentioned in an Alfresco comment";
     private static final String NOTIFICATION_TEMPLATE_PATH = "/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates/cm:notify_comment_email.html.ftl";
+    private static final QName TYPE_LINK = QName.createQName("http://www.alfresco.org/model/linksmodel/1.0", "link");
 
     public void notifyMentionedUsers(NodeRef nodeRef, List<String> userNameList) throws MentionNotifierException {
         for (String userName : userNameList) {
@@ -49,7 +53,11 @@ public class MentionNotifier {
         // Get the node this comment is attached to
         NodeRef contextNodeRef = getContextNodeRef(nodeRef);
 
-        // TODO Add a check for links and bail on those for now.
+        if (TYPE_LINK.equals(nodeService.getType(contextNodeRef))) {
+            // No support for links at the moment
+            logger.debug("Context node is a link, skipping");
+            return;
+        }
 
         // Set up a map of additional template params to be used for rendering the message
         Map<String, Serializable> templateParams = getTemplateContext(nodeRef, contextNodeRef);
