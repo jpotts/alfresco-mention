@@ -34,5 +34,7 @@
         <property name="mentionNotifier" ref="com.metaversant.MentionNotifier" />
         <property name="transactionService" ref="TransactionService" />
         <property name="threadPoolExecutor" ref="defaultAsyncThreadPool" />
+        <property name="commentMentionsEnabled" value="${mention.comments.enabled}" />
+        <property name="postMentionsEnabled" value="${mention.posts.enabled}" />
     </bean>
 </beans>

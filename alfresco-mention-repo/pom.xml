@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-mention-repo</artifactId>
-    <name>Alfresco Platform/Repository JAR Module</name>
-    <description>Platform/Repo JAR Module (to be included in the alfresco.war) - part of AIO - SDK 4.0
+    <name>Metaversant Alfresco Mentions</name>
+    <description>Repository tier customizations that add ability to @mention someone in a discussion or comment.
     </description>
     <packaging>jar</packaging>
 

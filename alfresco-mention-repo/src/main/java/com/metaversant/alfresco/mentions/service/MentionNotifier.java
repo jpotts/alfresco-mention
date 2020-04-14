@@ -1,5 +1,6 @@
 package com.metaversant.alfresco.mentions.service;
 
+import com.metaversant.alfresco.mentions.behavior.ScanCommentForMention;
 import com.metaversant.alfresco.mentions.exceptions.MentionNotifierException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
@@ -35,17 +36,19 @@ public class MentionNotifier {
 
     private Logger logger = Logger.getLogger(MentionNotifier.class);
 
-    private static final String NOTIFICATION_SUBJECT = "You were mentioned in an Alfresco comment";
-    private static final String NOTIFICATION_TEMPLATE_PATH = "/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates/cm:notify_comment_email.html.ftl";
+    private static final String COMMENT_NOTIFICATION_SUBJECT = "You were mentioned in an Alfresco comment";
+    private static final String COMMENT_NOTIFICATION_TEMPLATE_PATH = "/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates/cm:notify_comment_email.html.ftl";
+    private static final String POST_NOTIFICATION_SUBJECT = "You were mentioned in an Alfresco discussion";
+    private static final String POST_NOTIFICATION_TEMPLATE_PATH = "/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates/cm:notify_post_email.html.ftl";
     private static final QName TYPE_LINK = QName.createQName("http://www.alfresco.org/model/linksmodel/1.0", "link");
 
-    public void notifyMentionedUsers(NodeRef nodeRef, List<String> userNameList) throws MentionNotifierException {
+    public void notifyMentionedUsers(NodeRef nodeRef, List<String> userNameList, int type) throws MentionNotifierException {
         for (String userName : userNameList) {
-            sendNotification(userName, nodeRef);
+            sendNotification(userName, nodeRef, type);
         }
     }
 
-    private void sendNotification(String userName, NodeRef nodeRef) throws MentionNotifierException {
+    private void sendNotification(String userName, NodeRef nodeRef, int type) throws MentionNotifierException {
         String recipient = getEmailAddress(userName);
         if (recipient == null) {
             logger.debug("Could not determine recipient email address from userName: " + userName);
@@ -53,7 +56,7 @@ public class MentionNotifier {
         logger.debug("Sending notification to: " + recipient + " for: " + nodeRef);
 
         // Get the template to use for the notification
-        NodeRef notificationTemplate = getNotificationTemplate();
+        NodeRef notificationTemplate = getNotificationTemplate(type);
 
         // Get the node this comment is attached to
         NodeRef contextNodeRef = getContextNodeRef(nodeRef);
@@ -70,7 +73,11 @@ public class MentionNotifier {
         // Use action service to invoke the mail action executer
         Action mailAction = actionService.createAction(MailActionExecuter.NAME);
         mailAction.setParameterValue(MailActionExecuter.PARAM_TO, recipient);
-        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, NOTIFICATION_SUBJECT);
+        if (type == ScanCommentForMention.COMMENT_MENTION) {
+            mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, COMMENT_NOTIFICATION_SUBJECT);
+        } else if (type == ScanCommentForMention.POST_MENTION) {
+            mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, POST_NOTIFICATION_SUBJECT);
+        }
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, notificationTemplate);
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) templateParams);
         mailAction.setExecuteAsynchronously(true);
@@ -91,8 +98,16 @@ public class MentionNotifier {
         return templateParams;
     }
 
-    private NodeRef getNotificationTemplate() throws MentionNotifierException {
-        String query = "PATH:\"" + NOTIFICATION_TEMPLATE_PATH + "\"";
+    private NodeRef getNotificationTemplate(int type) throws MentionNotifierException {
+        String query;
+        if (type == ScanCommentForMention.COMMENT_MENTION) {
+            query = "PATH:\"" + COMMENT_NOTIFICATION_TEMPLATE_PATH + "\"";
+        } else if (type == ScanCommentForMention.POST_MENTION) {
+            query = "PATH:\"" + POST_NOTIFICATION_TEMPLATE_PATH + "\"";
+        } else {
+            throw new MentionNotifierException("Unexpected notification type specified: " + type);
+        }
+
         ResultSet resultSet = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
                 SearchService.LANGUAGE_FTS_ALFRESCO,
                 query

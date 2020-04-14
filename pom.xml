@@ -4,8 +4,9 @@
     <groupId>com.metaversant</groupId>
     <artifactId>alfresco-mention</artifactId>
     <version>0.0.2-SNAPSHOT</version>
-    <name>AIO - SDK 4.0</name>
-    <description>All-In-One (AIO) project for SDK 4.0</description>
+    <name>Metaversant Alfresco Mention Add-On</name>
+    <description>Repository tier customizations that add ability to @mention someone in a discussion or comment.
+    </description>
     <packaging>pom</packaging>
 
     <prerequisites>
@@ -132,7 +133,6 @@
                     the layout of your AMP. The end result is that Maven will produce both a JAR file and an AMP with your
                     module.
                 -->
-                <!--
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
@@ -158,7 +158,6 @@
                         </dependency>
                     </dependencies>
                 </plugin>
-                -->
 
                 <!-- Filter resources in any sub-project with this config -->
                 <plugin>

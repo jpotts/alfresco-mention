@@ -33,16 +33,16 @@
 
                                              <p>${person.properties.firstName}
                                              <#if person.properties.lastName?exists> ${person.properties.lastName}</#if>
-                                             has added a new comment that mentions you. The comment is in reference to a <#if contextNodeRef.isContainer>folder<#else>document</#if> named "${contextNodeRef.name}"<#if contextNodeRef.siteShortName??>, which is in the ${contextNodeRef.siteShortName!""} site</#if>.
+                                             has added a new discussion post that mentions you. <#if contextNodeRef.siteShortName??>The post is in the ${contextNodeRef.siteShortName!""} site</#if> in reply to "${document.parent.properties['cm:title']}".
 
-                                             <p>The comment is:<br />
+                                             <p>The post is:<br />
                                              ${document.content}</p>
 
-                                             <p>Click this link to view the item the comment is attached to:<br />
+                                             <p>Click this link to view the discussion:<br />
                                              <br />
                                              <#if contextNodeRef.isContainer>
                                                  <#if contextNodeRef.siteShortName??>
-                                                    <a href="${shareUrl}/page/site/${contextNodeRef.siteShortName}/folder-details?nodeRef=${contextNodeRef.nodeRef}">${shareUrl}/page/site/${contextNodeRef.siteShortName}/folder-details?nodeRef=${contextNodeRef.nodeRef}</a>
+                                                    <a href="${shareUrl}/page/site/${contextNodeRef.siteShortName}/discussions-topicview?topicId=${document.parent.name}">${shareUrl}/page/site/${contextNodeRef.siteShortName}/discussions-topicview?topicId=${document.parent.name}</a>
                                                  <#else>
                                                     <a href="${shareUrl}/page/folder-details?nodeRef=${contextNodeRef.nodeRef}">${shareUrl}/page/folder-details?nodeRef=${contextNodeRef.nodeRef}</a>
                                                  </#if>

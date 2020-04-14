@@ -36,6 +36,8 @@ public class ScanCommentForMention implements NodeServicePolicies.OnUpdateNodePo
 
     private static final String KEY_COMMENT_NODE =
             ScanCommentForMention.class.getName() + ".commentNode";
+    public static final int COMMENT_MENTION = 1;
+    public static final int POST_MENTION = 2;
 
     private TransactionListener transactionListener;
 
@@ -46,6 +48,8 @@ public class ScanCommentForMention implements NodeServicePolicies.OnUpdateNodePo
     private MentionNotifier mentionNotifier;
     private TransactionService transactionService;
     private ThreadPoolExecutor threadPoolExecutor;
+    private boolean commentMentionsEnabled;
+    private boolean postMentionsEnabled;
 
     // Behaviours
     private Behaviour onUpdateNode;
@@ -69,25 +73,35 @@ public class ScanCommentForMention implements NodeServicePolicies.OnUpdateNodePo
         this.transactionListener = new CommentUpdateTransactionListener();
     }
 
-    public void onUpdateNode(NodeRef commentNode) {
+    public void onUpdateNode(NodeRef node) {
         if (logger.isDebugEnabled()) logger.debug("Inside onUpdateNode");
-        findAndNotifyMentionedUsers(commentNode);
+        processNode(node);
     }
 
-    private void findAndNotifyMentionedUsers(NodeRef commentNode) {
-        if (nodeService.exists(commentNode)) {
-            if (isCommentNode(commentNode)) {
-                logger.debug("Post is a comment");
-                ContentReader contentReader = contentService.getReader(commentNode, PROP_CONTENT);
-                InputStream is = contentReader.getContentInputStream();
-                List<String> userNameList = MentionScanner.getUsers(is);
-                if (userNameList.size() > 0) {
-                    try {
-                        mentionNotifier.notifyMentionedUsers(commentNode, userNameList);
-                    } catch (MentionNotifierException mne) {
-                        logger.error(mne);
-                    }
+    private void processNode(NodeRef node) {
+        if (nodeService.exists(node)) {
+            // This is either a comment or a topic/post on a discussion
+            if (isCommentNode(node)) {
+                if (commentMentionsEnabled) {
+                    logger.debug("Post is a comment");
+                    scanAndNotify(node, COMMENT_MENTION);
                 }
+            } else if (postMentionsEnabled) {
+                logger.debug("Post is a post");
+                scanAndNotify(node, POST_MENTION);
+            }
+        }
+    }
+
+    private void scanAndNotify(NodeRef node, int type) {
+        ContentReader contentReader = contentService.getReader(node, PROP_CONTENT);
+        InputStream is = contentReader.getContentInputStream();
+        List<String> userNameList = MentionScanner.getUsers(is);
+        if (userNameList.size() > 0) {
+            try {
+                mentionNotifier.notifyMentionedUsers(node, userNameList, type);
+            } catch (MentionNotifierException mne) {
+                logger.error(mne);
             }
         }
     }
@@ -138,7 +152,7 @@ public class ScanCommentForMention implements NodeServicePolicies.OnUpdateNodePo
 
                         @Override
                         public Void execute() throws Throwable {
-                            findAndNotifyMentionedUsers(commentNode);
+                            processNode(commentNode);
                             return null;
                         }
                     };
@@ -189,5 +203,13 @@ public class ScanCommentForMention implements NodeServicePolicies.OnUpdateNodePo
 
     public void setMentionNotifier(MentionNotifier mentionNotifier) {
         this.mentionNotifier = mentionNotifier;
+    }
+
+    public void setCommentMentionsEnabled(boolean commentMentionsEnabled) {
+        this.commentMentionsEnabled = commentMentionsEnabled;
+    }
+
+    public void setPostMentionsEnabled(boolean postMentionsEnabled) {
+        this.postMentionsEnabled = postMentionsEnabled;
     }
 }

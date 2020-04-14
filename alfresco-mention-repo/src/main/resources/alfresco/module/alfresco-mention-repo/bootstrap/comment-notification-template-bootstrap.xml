@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0">
+    <cm:content view:childName="cm:notify_comment_email.html.ftl">
+        <view:aspects>
+            <cm:auditable></cm:auditable>
+            <sys:referenceable></sys:referenceable>
+            <cm:titled></cm:titled>
+            <sys:localized></sys:localized>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:acl></view:acl>
+        <view:properties>
+            <cm:name>${comment.notification.template.name}</cm:name>
+            <sys:store-identifier>SpacesStore</sys:store-identifier>
+            <sys:locale>en_US_</sys:locale>
+            <cm:content>contentUrl=classpath:alfresco/module/alfresco-mention-repo/bootstrap/notify_comment_email.html.ftl|mimetype=text/plain|size=4086|encoding=UTF-8|locale=en_US_</cm:content>
+            <cm:title>${comment.notification.template.title}</cm:title>
+            <app:editInline>true</app:editInline>
+            <sys:store-protocol>workspace</sys:store-protocol>
+            <cm:description>${comment.notification.template.description}</cm:description>
+        </view:properties>
+    </cm:content>
+</view:view>

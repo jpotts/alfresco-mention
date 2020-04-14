@@ -12,9 +12,9 @@
         </property>
     </bean>
 
-    <bean id="alfresco-mention-repo.notificationTemplateBootstrap" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
-        <property name="id"><value>alfresco-mention-repo.notificationTemplateBootstrap</value></property>
-        <property name="description"><value>alfresco-mention-repo.templateBootstrap.description</value></property>
+    <bean id="alfresco-mention-repo.commentNotificationTemplateBootstrap" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+        <property name="id"><value>alfresco-mention-repo.commentNotificationTemplateBootstrap</value></property>
+        <property name="description"><value>comment.notification.template.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>${version.schema}</value></property>
         <property name="targetSchema"><value>15000</value></property>
@@ -27,7 +27,28 @@
         <property name="bootstrapView">
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:email_templates/app:notify_email_templates</prop>
-                <prop key="location">alfresco/module/${project.artifactId}/bootstrap/notification-template-bootstrap.xml</prop>
+                <prop key="location">alfresco/module/${project.artifactId}/bootstrap/comment-notification-template-bootstrap.xml</prop>
+                <prop key="messages">alfresco.module.${project.artifactId}.messages.bootstrap-messages</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="alfresco-mention-repo.postNotificationTemplateBootstrap" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+        <property name="id"><value>alfresco-mention-repo.postNotificationTemplateBootstrap</value></property>
+        <property name="description"><value>post.notification.template.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>${version.schema}</value></property>
+        <property name="targetSchema"><value>15000</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:email_templates/app:notify_email_templates/cm:notify_post_email.html.ftl</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:email_templates/app:notify_email_templates</prop>
+                <prop key="location">alfresco/module/${project.artifactId}/bootstrap/post-notification-template-bootstrap.xml</prop>
                 <prop key="messages">alfresco.module.${project.artifactId}.messages.bootstrap-messages</prop>
             </props>
         </property>
