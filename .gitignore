@@ -1,6 +1,4 @@
 .idea
-alfresco-mention-repo/alf_data_dev
-alfresco-mention-repo/target
-alfresco-mention-share/target
+target
 *.log.*
 *.log
