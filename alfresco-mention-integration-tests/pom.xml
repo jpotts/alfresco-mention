@@ -11,7 +11,7 @@
     <parent>
         <groupId>com.metaversant</groupId>
         <artifactId>alfresco-mention</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.2</version>
     </parent>
 
     <properties>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>com.metaversant</groupId>
             <artifactId>alfresco-mention-repo</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <version>0.0.2</version>
             <scope>test</scope>
         </dependency>
 

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.metaversant</groupId>
     <artifactId>alfresco-mention</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
     <name>Metaversant Alfresco Mention Add-On</name>
     <description>Repository tier customizations that add ability to @mention someone in a discussion or comment.
     </description>
